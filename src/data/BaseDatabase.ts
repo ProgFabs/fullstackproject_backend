@@ -1,7 +1,8 @@
 import knex from "knex";
-import Knex from "knex";
+import Knex   from "knex";
 
-export default abstract class BaseDatabase {
+
+export abstract class BaseDatabase {
 
     private static connection: Knex | null = null;
 

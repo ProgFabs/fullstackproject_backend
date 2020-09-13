@@ -1,5 +1,6 @@
 import * as bcrypt from "bcryptjs";
 
+
 export class HashManager {
 
     public async hash(text: string): Promise<string> {

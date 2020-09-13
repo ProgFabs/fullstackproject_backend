@@ -26,7 +26,8 @@
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ts-node ./src/index.ts"
+    "start": "ts-node ./src/index.ts",
+    "a": "ts-node ./src/challenge.ts"
   },
   "repository": {
     "type": "git",
