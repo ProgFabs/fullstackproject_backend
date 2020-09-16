@@ -79,4 +79,11 @@ export interface MusicInputDTO {
     added_by: string;
 }
 
+export interface MusicFeedInputDTO {
+  musicGenre: string;
+  orderBy: string;
+  orderType: string;
+  page: number;
+}
+
 

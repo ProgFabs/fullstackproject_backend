@@ -1,11 +1,11 @@
 import { BaseDatabase } from "./BaseDatabase";
 import moment, { Moment } from "moment"
-import { Music } from "../model/Music";
+import { Music, MusicFeedInputDTO } from "../model/Music";
 
 export class MusicDatabase extends BaseDatabase {
   private static TABLE_NAME = "MC_Music";
 
-  public async insertMusic(
+  public async insertSong(
     id: string,
     title: string,
     author: string,
@@ -49,7 +49,7 @@ export class MusicDatabase extends BaseDatabase {
     }
   }
 
-  public async getMusicById(id: string): Promise<any> {
+  public async getSongById(id: string): Promise<any> {
     try {
       const result = await this.getConnection()
         .select("*")
@@ -61,19 +61,19 @@ export class MusicDatabase extends BaseDatabase {
     }
   }
 
-  public async getMusicByUserId(added_by: string): Promise<any> {
+  public async getSongByUserId(added_by: string): Promise<any> {
     try {
       const result = await this.getConnection()
         .select("*")
         .from(MusicDatabase.TABLE_NAME)
         .where({ added_by });
 
-        let counter = -1;
-        let newResult = [];
-        for (const item of result) {
-          counter++;
-          newResult.push(result[counter]);
-        }
+      let counter = -1;
+      let newResult = [];
+      for (const item of result) {
+        counter++;
+        newResult.push(result[counter]);
+      }
 
       return newResult;
     } catch (error) {
@@ -81,7 +81,7 @@ export class MusicDatabase extends BaseDatabase {
     }
   }
 
-  public async deleteMusicById(id: string): Promise<any> {
+  public async deleteSongById(id: string): Promise<any> {
     try {
       const result = await this.getConnection()
         .delete("*")
@@ -97,11 +97,11 @@ export class MusicDatabase extends BaseDatabase {
   public async deleteMusicGenresById(id: string): Promise<any> {
     try {
       const result = await this.getConnection()
-      .delete("")
-      .from("MC_MusicGenres")
-      .where({ music_id: id})
+        .delete("")
+        .from("MC_MusicGenres")
+        .where({ music_id: id });
 
-      return result[0]
+      return result[0];
     } catch (error) {
       throw new Error(error.sqlMessage || error.message);
     }
@@ -126,11 +126,11 @@ export class MusicDatabase extends BaseDatabase {
     }
   }
 
-  public async getAllMusic(): Promise<any> {
+  public async getAllSongs(): Promise<any> {
     try {
       const result = await this.getConnection()
-      .select("*")
-      .from(MusicDatabase.TABLE_NAME)
+        .select("*")
+        .from(MusicDatabase.TABLE_NAME);
 
       let counter = -1;
       let newResult = [];
@@ -141,7 +141,32 @@ export class MusicDatabase extends BaseDatabase {
 
       return newResult;
     } catch (error) {
-      throw new Error(error.sqlMessage || error.message);
+      throw new Error(
+        error.sqlMessage + " (getAllSongsFiltered)" ||
+          error.message + " (getAllSongsFiltered)"
+      );
+    }
+  }
+
+  public async getAllSongsFiltered(
+    feedInput: MusicFeedInputDTO,
+    musicPerPage: number,
+    offset: number
+  ): Promise<any> {
+    try {
+      const result = await this.getConnection().raw(`
+        SELECT m.*, g.genre from MC_Music m 
+        JOIN MC_MusicGenres g 
+        ON m.id = g.music_id
+        WHERE g.genre LIKE "%${feedInput.musicGenre}%"
+        ORDER BY ${feedInput.orderBy}
+        LIMIT ${musicPerPage}
+        OFFSET ${offset};
+      `);
+
+      return result[0];
+    } catch (error) {
+      throw new Error(error.sqlMessage + " (getAllSongsFiltered)" || error.message + " (getAllSongsFiltered)");
     }
   }
 }

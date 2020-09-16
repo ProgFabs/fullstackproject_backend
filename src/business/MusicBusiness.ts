@@ -1,6 +1,6 @@
 import { MusicDatabase } from '../data/MusicDatabase';
 import { IdGenerator } from '../services/IdGenerator';
-import { MusicInputDTO } from '../model/Music';
+import { MusicFeedInputDTO, MusicInputDTO } from '../model/Music';
 
 export class MusicBusiness {
   async insertMusic(music: MusicInputDTO, genres: string[]) {
@@ -8,10 +8,10 @@ export class MusicBusiness {
     const id = idGenerator.generate();
 
     const musicDatabase = new MusicDatabase();
-    const AllSongs = await this.getAllMusic();
+    const AllSongs = await this.getAllSongs();
 
     let songExistAlready = false;
-    for(const song of AllSongs) {
+    for (const song of AllSongs) {
       if (
         song.title === music.title &&
         song.author === music.author &&
@@ -20,11 +20,11 @@ export class MusicBusiness {
         console.log(songExistAlready);
         songExistAlready = true;
         throw new Error("Esta música já está registrada no banco!");
-      } 
+      }
     }
 
     if (!songExistAlready) {
-      await musicDatabase.insertMusic(
+      await musicDatabase.insertSong(
         id,
         music.title,
         music.author,
@@ -41,16 +41,16 @@ export class MusicBusiness {
     }
   }
 
-  async getMusicById(id: any) {
+  async getSongById(id: any) {
     const musicDatabase = new MusicDatabase();
-    const musicFromDB = await musicDatabase.getMusicById(id);
+    const musicFromDB = await musicDatabase.getSongById(id);
 
     return musicFromDB;
   }
 
-  async getMusicByUserId(id: any) {
+  async getSongByUserId(id: any) {
     const musicDatabase = new MusicDatabase();
-    const musicFromDB = await musicDatabase.getMusicByUserId(id);
+    const musicFromDB = await musicDatabase.getSongByUserId(id);
 
     return musicFromDB;
   }
@@ -62,17 +62,53 @@ export class MusicBusiness {
     return musicGenreFromDB;
   }
 
-  async deleteMusicById(id: string) {
+  async deleteSongById(id: string) {
     const musicDatabase = new MusicDatabase();
-    const songToDelete = await musicDatabase.deleteMusicById(id)
+    const songToDelete = await musicDatabase.deleteSongById(id);
     const musicGenresToDelete = await musicDatabase.deleteMusicGenresById(id);
 
     return songToDelete;
   }
 
-  async getAllMusic() {
+  async getAllSongs() {
     const musicDatabase = new MusicDatabase();
-    const musicFromDB = await musicDatabase.getAllMusic();
+    const musicFromDB = await musicDatabase.getAllSongs();
+
+    return musicFromDB;
+  }
+
+  async getAllSongsFiltered(
+    token: string,
+    feedInput: MusicFeedInputDTO
+  ): Promise<MusicFeedInputDTO[]> {
+    if (!feedInput.page || feedInput.page < 1 || Number.isNaN(feedInput.page)) {
+      feedInput.page = 1;
+    }
+
+    const songsPerPage = 5;
+
+    const offset = songsPerPage * (feedInput.page - 1);
+
+    if (!feedInput.musicGenre) {
+      feedInput.musicGenre = "";
+      //throw new Error("Envie um nome de usuário válido");
+    }
+
+    if (feedInput.orderBy !== "title" && feedInput.orderBy !== "createdAt") {
+      // throw new Error("Passe um parâmetro de ordenação válido")
+      feedInput.orderBy = "title";
+    }
+
+    if (feedInput.orderType !== "ASC" && feedInput.orderType !== "DESC") {
+      feedInput.orderType = "ASC";
+    }
+
+    const musicDatabase = new MusicDatabase();
+    const musicFromDB = await musicDatabase.getAllSongsFiltered(
+      feedInput,
+      songsPerPage,
+      offset
+    );
 
     return musicFromDB;
   }
