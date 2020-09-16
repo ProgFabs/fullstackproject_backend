@@ -6,7 +6,7 @@ export const musicRouter = express.Router();
 const musicController = new MusicController();
 
 musicRouter.post("/register", musicController.insertMusic);
-musicRouter.post("/get/:id", musicController.getMusicById);
-musicRouter.post("/get/", musicController.getMusicByUserId);
-musicRouter.get("/get-all", musicController.getAllMusic)
-musicRouter.delete("/delete/:id", musicController.deleteMusicById)
+musicRouter.post("/get/:id", musicController.getSongById);
+musicRouter.post("/get/", musicController.getSongByUserId);
+musicRouter.get("/get-all", musicController.getAllSongs)
+musicRouter.delete("/delete/:id", musicController.deleteSongById)

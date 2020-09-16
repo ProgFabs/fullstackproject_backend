@@ -49,7 +49,7 @@ export class PlaylistController {
       const userDB = new UserDatabase();
       const user = await userDB.getUserById(authenticationData.id);
       const musicDB = new MusicDatabase();
-      const song = await musicDB.getMusicById(id);
+      const song = await musicDB.getSongById(id);
 
       const playlistBusiness = new PlaylistBusiness();
       await playlistBusiness.insertSongIntoPlaylist(song, playlistId);
@@ -72,7 +72,7 @@ export class PlaylistController {
       const songs: any[] = [];
 
       for (const item of playlistSongs) {
-        const newSongs: [] = await musicBusiness.getMusicById(item);
+        const newSongs: [] = await musicBusiness.getSongById(item);
         songs.push(newSongs)
       }
 
