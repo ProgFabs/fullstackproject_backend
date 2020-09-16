@@ -42,5 +42,4 @@ export class UserDatabase extends BaseDatabase {
 
     return User.toUserModel(result[0]);
   }
-
 }

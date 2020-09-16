@@ -8,3 +8,5 @@ const musicController = new MusicController();
 musicRouter.post("/register", musicController.insertMusic);
 musicRouter.post("/get/:id", musicController.getMusicById);
 musicRouter.post("/get/", musicController.getMusicByUserId);
+musicRouter.get("/get-all", musicController.getAllMusic)
+musicRouter.delete("/delete/:id", musicController.deleteMusicById)

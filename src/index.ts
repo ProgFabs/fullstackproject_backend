@@ -1,16 +1,20 @@
 import { musicRouter } from './routes/musicRouter';
 import dotenv from "dotenv";
+import cors from "cors"
 import {AddressInfo} from "net";
 import express from "express";
 import { userRouter } from "./routes/userRouter";
+import { playlistRouter } from './routes/playlistRouter';
 
 dotenv.config();
 const app = express();
 
 app.use(express.json());
+app.use(cors())
 
 app.use("/user", userRouter);
 app.use("/music", musicRouter);
+app.use("/playlist", playlistRouter);
 
 const server = app.listen(3000, () => {
     if (server) {
