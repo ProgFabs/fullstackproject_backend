@@ -18,6 +18,7 @@ export class MusicController {
       const user = await userDB.getUserById(authenticationData.id);
 
       const receivedGenres = req.body.genre.split(", ");
+
       const receivedDate: Date = new Date(req.body.date);
       const musicBusiness = new MusicBusiness();
 

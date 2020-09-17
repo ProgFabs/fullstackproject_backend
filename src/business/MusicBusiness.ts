@@ -19,7 +19,7 @@ export class MusicBusiness {
       ) {
         console.log(songExistAlready);
         songExistAlready = true;
-        throw new Error("Esta música já está registrada no banco!");
+        throw new Error("This song is already registered in the database!");
       }
     }
 
@@ -35,7 +35,12 @@ export class MusicBusiness {
       );
     }
 
-    for (const genre of genres) {
+    const receivedGenres: string[] = [];
+    for (let genre of genres) {
+      receivedGenres.push(genre.toLowerCase())
+    }
+
+    for (const genre of receivedGenres) {
       const musicGenreId = idGenerator.generate();
       await musicDatabase.insertMusicGenre(musicGenreId, id, genre);
     }

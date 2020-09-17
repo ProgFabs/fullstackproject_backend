@@ -15,7 +15,13 @@ export class UserBusiness {
         const hashPassword = await hashManager.hash(user.password);
 
         const userDatabase = new UserDatabase();
-        await userDatabase.createUser(id, user.email, user.name, hashPassword);
+        const userVerification = await userDatabase.getUserByEmail(user.email)
+
+        if(userVerification.getEmail() === user.email) {
+            throw new Error("This email is registered already!")
+        } else {
+            await userDatabase.createUser(id, user.name, user.email, hashPassword);
+        }
 
         const authenticator = new Authenticator();
         const accessToken = authenticator.generateToken({ id });
@@ -24,7 +30,7 @@ export class UserBusiness {
     }
 
     async getUserByEmail(user: LoginInputDTO) {
-
+        console.log(user.email)
         const userDatabase = new UserDatabase();
         const userFromDB = await userDatabase.getUserByEmail(user.email);
 
