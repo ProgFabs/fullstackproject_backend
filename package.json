@@ -31,6 +31,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "ts-node ./src/index.ts",
+    "challenge": "ts-node ./src/challenge.ts",
     "server": "nodemon ./src/services/server.js"
   },
   "repository": {

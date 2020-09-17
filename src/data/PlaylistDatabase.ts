@@ -43,6 +43,24 @@ export class PlaylistDatabase extends BaseDatabase {
     }
   }
 
+  public async getAllPlaylists(): Promise<any> {
+    try {
+      const result = await this.getConnection()
+        .select("*")
+        .from("MC_Playlist")
+
+      let counter = -1;
+      let newResult = [];
+      for (const item of result) {
+        counter++;
+        newResult.push(result[counter]);
+      }
+      return newResult;
+    } catch (error) {
+      throw new Error(error.sqlMessage || error.message);
+    }
+  }
+
   public async getPlaylistSongs(playlist_id: string): Promise<any> {
     try {
       const result = await this.getConnection()

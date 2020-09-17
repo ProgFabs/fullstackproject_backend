@@ -159,14 +159,23 @@ export class MusicDatabase extends BaseDatabase {
         JOIN MC_MusicGenres g 
         ON m.id = g.music_id
         WHERE g.genre LIKE "%${feedInput.musicGenre}%"
-        ORDER BY ${feedInput.orderBy}
-        LIMIT ${musicPerPage}
-        OFFSET ${offset};
+        ORDER BY ${feedInput.orderBy} ${feedInput.orderType}
+      
       `);
+      // LIMIT ${musicPerPage}
+      //   OFFSET ${offset};
+
+      result[0] = result[0].filter(
+        (el: any, index: any, self: any) =>
+          index ===
+          self.findIndex(
+            (e: any) => e.title === el.title && e.id === el.id
+          )
+      );
 
       return result[0];
     } catch (error) {
-      throw new Error(error.sqlMessage + " (getAllSongsFiltered)" || error.message + " (getAllSongsFiltered)");
+      throw new Error(error.sqlMessage || error.message );
     }
   }
 }
