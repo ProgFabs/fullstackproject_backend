@@ -3,7 +3,7 @@ import { User } from "../model/User";
 
 export class UserDatabase extends BaseDatabase {
 
-  private static TABLE_NAME = "LAMA_Users";
+  private static TABLE_NAME = "MC_Users";
 
   public async createUser(
     id: string,
