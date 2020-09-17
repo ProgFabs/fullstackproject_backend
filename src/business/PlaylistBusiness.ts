@@ -42,9 +42,18 @@ export class PlaylistBusiness {
     await playlistDB.insertSongIntoPlaylist(id, song.id, playlistId);
   }
 
+  async getAllPlaylists() {
+    const playlistDatabase = new PlaylistDatabase();
+    const playlists = await playlistDatabase.getAllPlaylists();
+
+    return playlists;
+  }
+
   async getPlaylistSongs(playlistId: string) {
     const playlistDatabase = new PlaylistDatabase();
-    const playlistSongsFromDB = await playlistDatabase.getPlaylistSongs(playlistId);
+    const playlistSongsFromDB = await playlistDatabase.getPlaylistSongs(
+      playlistId
+    );
 
     return playlistSongsFromDB;
   }
