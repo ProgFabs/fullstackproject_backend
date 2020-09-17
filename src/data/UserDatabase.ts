@@ -7,16 +7,16 @@ export class UserDatabase extends BaseDatabase {
 
   public async createUser(
     id: string,
-    email: string,
     name: string,
+    email: string,
     password: string,
   ): Promise<void> {
     try {
       await this.getConnection()
         .insert({
           id,
-          email,
           name,
+          email,
           password,
         })
         .into(UserDatabase.TABLE_NAME);
