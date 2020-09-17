@@ -140,7 +140,6 @@ export class MusicController {
       };
 
       const music: any[] = await musicBusiness.getAllSongsFiltered(token, feedInput);
-      console.log(music);
       const songs = [];
 
       for (const item of music) {

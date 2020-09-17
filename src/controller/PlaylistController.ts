@@ -62,18 +62,35 @@ export class PlaylistController {
     }
   }
 
+  async getAllPlaylists(req: Request, res: Response) {
+    const playlistBusiness = new PlaylistBusiness();
+    try {
+      const playlists: any[] = await playlistBusiness.getAllPlaylists();
+
+      const result = {
+        playlists
+      };
+
+      res.status(200).send(result);
+    } catch (err) {
+      res.status(400).send({ error: err.message });
+    }
+  }
+
   async getPlaylistSongs(req: Request, res: Response) {
     const playlistBusiness = new PlaylistBusiness();
     const musicBusiness = new MusicBusiness();
     try {
-      const playlistId = req.params.id
-      const playlistSongs: any[] = await playlistBusiness.getPlaylistSongs(playlistId);
+      const playlistId = req.params.id;
+      const playlistSongs: any[] = await playlistBusiness.getPlaylistSongs(
+        playlistId
+      );
       const retrievedSongs = [];
       const songs: any[] = [];
 
       for (const item of playlistSongs) {
         const newSongs: [] = await musicBusiness.getSongById(item);
-        songs.push(newSongs)
+        songs.push(newSongs);
       }
 
       for (const item of songs) {

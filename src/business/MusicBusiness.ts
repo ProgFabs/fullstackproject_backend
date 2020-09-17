@@ -85,7 +85,7 @@ export class MusicBusiness {
       feedInput.page = 1;
     }
 
-    const songsPerPage = 5;
+    const songsPerPage = 20;
 
     const offset = songsPerPage * (feedInput.page - 1);
 
