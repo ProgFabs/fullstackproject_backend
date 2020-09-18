@@ -45,7 +45,10 @@ export class PlaylistDatabase extends BaseDatabase {
 
   public async getAllPlaylistsByUserId(creator_id: string): Promise<any> {
     try {
-      const result = await this.getConnection().select("*").from(PlaylistDatabase.TABLE_NAME).where( {creator_id} );
+      const result = await this.getConnection()
+        .select("*")
+        .from(PlaylistDatabase.TABLE_NAME)
+        .where({ creator_id });
 
       let counter = -1;
       let newResult = [];
@@ -77,10 +80,36 @@ export class PlaylistDatabase extends BaseDatabase {
     }
   }
 
-  public async deleteSongById(id: string): Promise<any> {
+  public async deleteSongFromPlaylistById(id: string): Promise<any> {
     try {
       const result = await this.getConnection()
-        .delete("*")
+        .delete()
+        .from("MC_PlaylistSongs")
+        .where({ id });
+
+      return result;
+    } catch (error) {
+      throw new Error(error.sqlMessage || error.message);
+    }
+  }
+
+  public async deleteSongFromPlaylistByMusicId(music_id: string): Promise<any> {
+    try {
+      const result = await this.getConnection()
+        .delete()
+        .from("MC_PlaylistSongs")
+        .where({ music_id });
+
+      return result;
+    } catch (error) {
+      throw new Error(error.sqlMessage || error.message);
+    }
+  }
+
+  public async getSongToDeleteById(id: string): Promise<any> {
+    try {
+      const result = await this.getConnection()
+        .select("*")
         .from("MC_PlaylistSongs")
         .where({ id });
 
@@ -90,15 +119,14 @@ export class PlaylistDatabase extends BaseDatabase {
     }
   }
 
-  public async songToDeleteFromPlaylist(id: string): Promise<any> {
+  public async getSongToDeleteByMusicId(music_id: string): Promise<any[]> {
     try {
       const result = await this.getConnection()
         .select("*")
         .from("MC_PlaylistSongs")
-        .where({ id });
+        .where({ music_id });
 
-      
-      return result[0];
+      return result;
     } catch (error) {
       throw new Error(error.sqlMessage || error.message);
     }

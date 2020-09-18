@@ -18,7 +18,7 @@ export class PlaylistController {
       const authenticationData = authenticator.getData(token);
 
       const userDB = new UserDatabase();
-      const user:any = await userDB.getUserById(authenticationData.id);
+      const user: any = await userDB.getUserById(authenticationData.id);
       const playlistBusiness = new PlaylistBusiness();
 
       const input: PlaylistInputDTO = {
@@ -72,7 +72,9 @@ export class PlaylistController {
       const authenticationData = authenticator.getData(token);
       const userDB = new UserDatabase();
       const user: any = await userDB.getUserById(authenticationData.id);
-      const playlists: any[] = await playlistBusiness.getAllPlaylistsByUserId(user.id);
+      const playlists: any[] = await playlistBusiness.getAllPlaylistsByUserId(
+        user.id
+      );
 
       const result = {
         playlists,
@@ -89,16 +91,19 @@ export class PlaylistController {
     const musicBusiness = new MusicBusiness();
     try {
       const playlistId = req.params.id;
-      const playlistSongs: any[] = await playlistBusiness.getPlaylistSongs(
+      const playlistSongsIds: any[] = await playlistBusiness.getPlaylistSongs(
         playlistId
       );
-      const retrievedSongs = [];
+      const retrievedSongs: any[] = [];
       const songs: any[] = [];
 
-      for (const item of playlistSongs) {
+      console.log("IDs que chegaram na controller", playlistSongsIds);
+      for (const item of playlistSongsIds) {
         const newSongs: [] = await musicBusiness.getSongById(item);
         songs.push(newSongs);
       }
+
+      console.log("músicas", songs);
 
       for (const item of songs) {
         const convertedDate = moment(item.date).format("DD-MM-YYYY");
@@ -106,6 +111,8 @@ export class PlaylistController {
 
         retrievedSongs.push(item);
       }
+
+      console.log("retrievedSongs", retrievedSongs);
 
       const result = {
         PlaylistSongs: retrievedSongs,
@@ -117,7 +124,7 @@ export class PlaylistController {
     }
   }
 
-  async deleteSongById(req: Request, res: Response) {
+  async deleteSongFromPlaylistById(req: Request, res: Response) {
     try {
       const token = req.headers.auth as string;
       const id = req.params.id;
@@ -129,17 +136,19 @@ export class PlaylistController {
       const userDB = new UserDatabase();
       const user: any = await userDB.getUserById(authenticationData.id);
 
-      const userPlaylists = await playlistBusiness.getAllPlaylistsByUserId(user.id)
-      const userPlaylistsIds: any[] = []
-      const songToDelete = await playlistDB.songToDeleteFromPlaylist(id);
+      const userPlaylists = await playlistBusiness.getAllPlaylistsByUserId(
+        user.id
+      );
+      const userPlaylistsIds: any[] = [];
+      const songToDelete = await playlistDB.getSongToDeleteById(id); // alterei essa linha as 18h56
 
-      for(let playlist of userPlaylists) {
-        userPlaylistsIds.push(playlist.id)
+      for (let playlist of userPlaylists) {
+        userPlaylistsIds.push(playlist.id);
       }
 
-      for(let item of userPlaylistsIds) {
+      for (let item of userPlaylistsIds) {
         if (songToDelete.playlist_id === item) {
-          await playlistBusiness.deleteSongById(id);
+          await playlistBusiness.deleteSongFromPlaylistById(id);
         } else {
           throw new Error(
             "You can't delete this song, as you're not it's owner."
