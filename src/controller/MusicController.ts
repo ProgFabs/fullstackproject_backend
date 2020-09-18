@@ -15,7 +15,7 @@ export class MusicController {
       const authenticationData = authenticator.getData(token);
 
       const userDB = new UserDatabase();
-      const user = await userDB.getUserById(authenticationData.id);
+      const user: any = await userDB.getUserById(authenticationData.id);
 
       const receivedGenres = req.body.genre.split(", ");
 
@@ -28,7 +28,7 @@ export class MusicController {
         date: receivedDate,
         file: req.body.file,
         album: req.body.album,
-        added_by: user.getId(),
+        added_by: user.id,
       };
 
       await musicBusiness.insertMusic(input, receivedGenres);

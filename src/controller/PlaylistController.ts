@@ -17,14 +17,14 @@ export class PlaylistController {
       const authenticationData = authenticator.getData(token);
 
       const userDB = new UserDatabase();
-      const user = await userDB.getUserById(authenticationData.id);
+      const user:any = await userDB.getUserById(authenticationData.id);
       const playlistBusiness = new PlaylistBusiness();
 
       const input: PlaylistInputDTO = {
         title: req.body.title,
         subtitle: req.body.subtitle,
         image: req.body.image || null,
-        creator_id: user.getId(),
+        creator_id: user.id,
       };
 
       await playlistBusiness.insertPlaylist(input);
@@ -62,13 +62,19 @@ export class PlaylistController {
     }
   }
 
-  async getAllPlaylists(req: Request, res: Response) {
-    const playlistBusiness = new PlaylistBusiness();
+  async getAllPlaylistsByUserId(req: Request, res: Response) {
     try {
-      const playlists: any[] = await playlistBusiness.getAllPlaylists();
+      const token = req.headers.auth as string;
+
+      const playlistBusiness = new PlaylistBusiness();
+      const authenticator = new Authenticator();
+      const authenticationData = authenticator.getData(token);
+      const userDB = new UserDatabase();
+      const user: any = await userDB.getUserById(authenticationData.id);
+      const playlists: any[] = await playlistBusiness.getAllPlaylistsByUserId(user.id);
 
       const result = {
-        playlists
+        playlists,
       };
 
       res.status(200).send(result);
@@ -105,6 +111,36 @@ export class PlaylistController {
       };
 
       res.status(200).send(result);
+    } catch (err) {
+      res.status(400).send({ error: err.message });
+    }
+  }
+
+  async deleteSongById(req: Request, res: Response) {
+    try {
+      const token = req.headers.auth as string;
+      const id = req.params.id;
+
+      const playlistBusiness = new PlaylistBusiness();
+      const authenticator = new Authenticator();
+      const authenticationData = authenticator.getData(token);
+      const userDB = new UserDatabase();
+      const user: any = await userDB.getUserById(authenticationData.id);
+      const musicBusiness = new MusicBusiness()
+
+      const songToDelete = await musicBusiness.getSongById(id);
+
+      if (songToDelete.added_by === user.id) {
+        await playlistBusiness.deleteSongById(id);
+      } else {
+        throw new Error(
+          "You can't delete this song, as you're not it's owner."
+        );
+      }
+
+      res.status(200).send({
+        message: "Song deleted successfully!",
+      });
     } catch (err) {
       res.status(400).send({ error: err.message });
     }
