@@ -15,12 +15,12 @@ export class UserBusiness {
         const hashPassword = await hashManager.hash(user.password);
 
         const userDatabase = new UserDatabase();
-        const userVerification = await userDatabase.getUserByEmail(user.email)
+        const userVerification: any = await userDatabase.getUserByEmail(user.email)
 
-        if(userVerification.getEmail() === user.email) {
-            throw new Error("This email is registered already!")
-        } else {
+        if(userVerification === "User not found!") {
             await userDatabase.createUser(id, user.name, user.email, hashPassword);
+        } else {
+            throw new Error("This email is registered already!")
         }
 
         const authenticator = new Authenticator();

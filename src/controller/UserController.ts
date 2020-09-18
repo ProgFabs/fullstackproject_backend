@@ -42,7 +42,6 @@ export class UserController {
             res.status(200).send({ token });
 
         } catch (error) {
-            console.log("to aqui")
             res.status(400).send({ error: error.message });
         }
 
