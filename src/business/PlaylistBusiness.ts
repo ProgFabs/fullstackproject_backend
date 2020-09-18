@@ -58,9 +58,9 @@ export class PlaylistBusiness {
     return playlistSongsFromDB;
   }
 
-  async deleteSongById(id: string) {
+  async deleteSongFromPlaylistById(id: string) {
     const playlistDatabase = new PlaylistDatabase();
-    const songToDelete = await playlistDatabase.deleteSongById(id);
+    const songToDelete = await playlistDatabase.deleteSongFromPlaylistById(id);
 
     return songToDelete;
   }

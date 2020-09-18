@@ -8,5 +8,5 @@ const playlistController = new PlaylistController();
 playlistRouter.get("/", playlistController.getAllPlaylistsByUserId);
 playlistRouter.put("/register", playlistController.insertPlaylist);
 playlistRouter.post("/add/:id", playlistController.insertSongIntoPlaylist);
-playlistRouter.delete("/:id", playlistController.deleteSongById);
+playlistRouter.delete("/:id", playlistController.deleteSongFromPlaylistById);
 playlistRouter.get("/:id", playlistController.getPlaylistSongs);

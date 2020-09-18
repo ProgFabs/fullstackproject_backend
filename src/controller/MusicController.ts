@@ -5,6 +5,8 @@ import { Authenticator } from '../services/Authenticator';
 import moment from 'moment';
 import { UserDatabase } from '../data/UserDatabase';
 import { MusicDatabase } from '../data/MusicDatabase';
+import { PlaylistBusiness } from '../business/PlaylistBusiness';
+import { PlaylistDatabase } from '../data/PlaylistDatabase';
 
 export class MusicController {
   async insertMusic(req: Request, res: Response) {
@@ -82,11 +84,23 @@ export class MusicController {
       const authenticationData = authenticator.getData(token);
       const userDB = new UserDatabase();
       const user = await userDB.getUserById(authenticationData.id);
+      const playlistDB = new PlaylistDatabase();
 
+      const entriesToDeleteFromPlaylist: any[] = await playlistDB.getSongToDeleteByMusicId(id);
       const songToDelete = await musicBusiness.getSongById(id);
+      if (songToDelete === undefined) {
+        throw new Error("This song doesn't exist");
+      }
 
       if (songToDelete.added_by === user.getId()) {
-        await musicBusiness.deleteSongById(id);
+          for (let entry of entriesToDeleteFromPlaylist) {
+            if(entry.music_id === songToDelete.id) {
+              console.log(entry)
+              console.log(songToDelete.id)
+              await playlistDB.deleteSongFromPlaylistByMusicId(id);
+              await musicBusiness.deleteSongById(id);
+            }
+          }
       } else {
         throw new Error(
           "You can't delete this song, as you're not it's owner."
