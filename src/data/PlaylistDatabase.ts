@@ -77,13 +77,27 @@ export class PlaylistDatabase extends BaseDatabase {
     }
   }
 
-  public async deleteSongById(music_id: string): Promise<any> {
+  public async deleteSongById(id: string): Promise<any> {
     try {
       const result = await this.getConnection()
         .delete("*")
         .from("MC_PlaylistSongs")
-        .where({ music_id });
+        .where({ id });
 
+      return result[0];
+    } catch (error) {
+      throw new Error(error.sqlMessage || error.message);
+    }
+  }
+
+  public async songToDeleteFromPlaylist(id: string): Promise<any> {
+    try {
+      const result = await this.getConnection()
+        .select("*")
+        .from("MC_PlaylistSongs")
+        .where({ id });
+
+      
       return result[0];
     } catch (error) {
       throw new Error(error.sqlMessage || error.message);

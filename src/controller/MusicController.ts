@@ -84,8 +84,6 @@ export class MusicController {
       const user = await userDB.getUserById(authenticationData.id);
 
       const songToDelete = await musicBusiness.getSongById(id);
-      console.log(songToDelete.title);
-      console.log(songToDelete.added_by);
 
       if (songToDelete.added_by === user.getId()) {
         await musicBusiness.deleteSongById(id);

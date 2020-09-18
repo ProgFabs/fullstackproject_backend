@@ -7,6 +7,7 @@ import { UserDatabase } from '../data/UserDatabase';
 import { PlaylistDatabase } from '../data/PlaylistDatabase';
 import { MusicDatabase } from '../data/MusicDatabase';
 import { MusicBusiness } from '../business/MusicBusiness';
+import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
 
 export class PlaylistController {
   async insertPlaylist(req: Request, res: Response) {
@@ -122,20 +123,28 @@ export class PlaylistController {
       const id = req.params.id;
 
       const playlistBusiness = new PlaylistBusiness();
+      const playlistDB = new PlaylistDatabase();
       const authenticator = new Authenticator();
       const authenticationData = authenticator.getData(token);
       const userDB = new UserDatabase();
       const user: any = await userDB.getUserById(authenticationData.id);
-      const musicBusiness = new MusicBusiness()
 
-      const songToDelete = await musicBusiness.getSongById(id);
+      const userPlaylists = await playlistBusiness.getAllPlaylistsByUserId(user.id)
+      const userPlaylistsIds: any[] = []
+      const songToDelete = await playlistDB.songToDeleteFromPlaylist(id);
 
-      if (songToDelete.added_by === user.id) {
-        await playlistBusiness.deleteSongById(id);
-      } else {
-        throw new Error(
-          "You can't delete this song, as you're not it's owner."
-        );
+      for(let playlist of userPlaylists) {
+        userPlaylistsIds.push(playlist.id)
+      }
+
+      for(let item of userPlaylistsIds) {
+        if (songToDelete.playlist_id === item) {
+          await playlistBusiness.deleteSongById(id);
+        } else {
+          throw new Error(
+            "You can't delete this song, as you're not it's owner."
+          );
+        }
       }
 
       res.status(200).send({

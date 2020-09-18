@@ -30,7 +30,6 @@ export class UserBusiness {
     }
 
     async getUserByEmail(user: LoginInputDTO) {
-        console.log(user.email)
         const userDatabase = new UserDatabase();
         const userFromDB = await userDatabase.getUserByEmail(user.email);
 
