@@ -42,9 +42,9 @@ export class PlaylistBusiness {
     await playlistDB.insertSongIntoPlaylist(id, song.id, playlistId);
   }
 
-  async getAllPlaylists() {
+  async getAllPlaylistsByUserId(id: string) {
     const playlistDatabase = new PlaylistDatabase();
-    const playlists = await playlistDatabase.getAllPlaylists();
+    const playlists = await playlistDatabase.getAllPlaylistsByUserId(id);
 
     return playlists;
   }
@@ -56,5 +56,12 @@ export class PlaylistBusiness {
     );
 
     return playlistSongsFromDB;
+  }
+
+  async deleteSongById(id: string) {
+    const playlistDatabase = new PlaylistDatabase();
+    const songToDelete = await playlistDatabase.deleteSongById(id);
+
+    return songToDelete;
   }
 }

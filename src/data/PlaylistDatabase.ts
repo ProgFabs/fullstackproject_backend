@@ -43,11 +43,9 @@ export class PlaylistDatabase extends BaseDatabase {
     }
   }
 
-  public async getAllPlaylists(): Promise<any> {
+  public async getAllPlaylistsByUserId(creator_id: string): Promise<any> {
     try {
-      const result = await this.getConnection()
-        .select("*")
-        .from("MC_Playlist")
+      const result = await this.getConnection().select("*").from(PlaylistDatabase.TABLE_NAME).where( {creator_id} );
 
       let counter = -1;
       let newResult = [];
@@ -74,6 +72,19 @@ export class PlaylistDatabase extends BaseDatabase {
         newResult.push(result[counter].music_id);
       }
       return newResult;
+    } catch (error) {
+      throw new Error(error.sqlMessage || error.message);
+    }
+  }
+
+  public async deleteSongById(music_id: string): Promise<any> {
+    try {
+      const result = await this.getConnection()
+        .delete("*")
+        .from("MC_PlaylistSongs")
+        .where({ music_id });
+
+      return result[0];
     } catch (error) {
       throw new Error(error.sqlMessage || error.message);
     }
