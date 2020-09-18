@@ -17,7 +17,6 @@ export class MusicBusiness {
         song.author === music.author &&
         song.album === music.album
       ) {
-        console.log(songExistAlready);
         songExistAlready = true;
         throw new Error("This song is already registered in the database!");
       }
