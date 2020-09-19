@@ -93,10 +93,11 @@ export class MusicController {
       }
 
       if (songToDelete.added_by === user.getId()) {
+        if (entriesToDeleteFromPlaylist.length === 0) {
+          await musicBusiness.deleteSongById(id);
+        } else if (entriesToDeleteFromPlaylist.length > 0) {
           for (let entry of entriesToDeleteFromPlaylist) {
             if(entry.music_id === songToDelete.id) {
-              console.log(entry)
-              console.log(songToDelete.id)
               await playlistDB.deleteSongFromPlaylistByMusicId(id);
               await musicBusiness.deleteSongById(id);
             }
@@ -106,6 +107,7 @@ export class MusicController {
           "You can't delete this song, as you're not it's owner."
         );
       }
+    }
 
       res.status(200).send({
         message: "Song deleted successfully!",

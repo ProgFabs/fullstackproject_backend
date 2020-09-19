@@ -84,11 +84,12 @@ export class MusicDatabase extends BaseDatabase {
   public async deleteSongById(id: string): Promise<any> {
     try {
       const result = await this.getConnection()
-        .delete("*")
+        .delete()
         .from(MusicDatabase.TABLE_NAME)
         .where({ id });
 
-      return result[0];
+        console.log(result)
+      return result;
     } catch (error) {
       throw new Error(error.sqlMessage || error.message);
     }

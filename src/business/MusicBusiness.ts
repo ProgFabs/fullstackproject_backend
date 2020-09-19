@@ -71,6 +71,7 @@ export class MusicBusiness {
     const songToDelete = await musicDatabase.deleteSongById(id);
     const musicGenresToDelete = await musicDatabase.deleteMusicGenresById(id);
 
+    console.log(songToDelete)
     return songToDelete;
   }
 
