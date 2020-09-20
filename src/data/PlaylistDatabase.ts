@@ -63,17 +63,17 @@ export class PlaylistDatabase extends BaseDatabase {
     }
   }
 
-  public async getPlaylistSongs(playlist_id: string): Promise<any> {
+  public async getPlaylistSongsIds(id: string): Promise<any> {
     try {
       const result = await this.getConnection()
         .select("*")
         .from("MC_PlaylistSongs")
-        .where({ playlist_id });
+        .where({ id });
       let counter = -1;
       let newResult = [];
       for (const item of result) {
         counter++;
-        newResult.push(result[counter].music_id);
+        newResult.push(result[counter]);
       }
       return newResult;
     } catch (error) {
@@ -152,7 +152,7 @@ export class PlaylistDatabase extends BaseDatabase {
       const playlistId = playlist_id.slice(1, -1);
 
       const result = await this.getConnection().raw(`
-        SELECT m.*, g.genre from MC_Music m 
+        SELECT m.*, p.id AS playlistId, g.genre from MC_Music m 
         INNER JOIN MC_MusicGenres g 
         INNER JOIN MC_PlaylistSongs p 
         ON (m.id = g.music_id AND m.id = p.music_id)
@@ -167,7 +167,6 @@ export class PlaylistDatabase extends BaseDatabase {
           self.findIndex((e: any) => e.title === el.title && e.id === el.id)
       );
 
-      console.log(result[0])
 
       return result[0];
     } catch (error) {

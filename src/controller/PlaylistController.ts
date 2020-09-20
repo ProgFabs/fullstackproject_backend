@@ -121,7 +121,7 @@ export class PlaylistController {
     try {
       const token = req.headers.auth as string;
       const songId = req.params.id;
-      const playlistId = req.body.playlist_id;
+      const playlistId = req.params.playlistId;
 
       const playlistBusiness = new PlaylistBusiness();
 
@@ -130,21 +130,20 @@ export class PlaylistController {
 
       const userDB = new UserDatabase();
       const user: any = await userDB.getUserById(authenticationData.id);
-      const userPlaylists = await playlistBusiness.getAllPlaylistsByUserId(
-        user.id
-      );
-      const songToDelete = await playlistBusiness.getPlaylistSongs(songId);
+      const playlistsSongs = await playlistBusiness.getPlaylistsSongsIds(songId);
 
-      if (songToDelete.length === 0) {
+      if (playlistsSongs.length === 0) {
         throw new Error("Error upon trying to find the song.");
       }
-
-      for (let playlist of userPlaylists) {
-        if (playlist.id === playlistId) {
-          await playlistBusiness.deleteSongFromPlaylistById(songId, playlistId);
+      
+      for (let song of playlistsSongs) {
+        if (songId === song.id) {
+          await playlistBusiness.deleteSongFromPlaylistById(song.music_id, playlistId);
+        } else {
+          throw new Error("Error upon trying to delete the song")
         }
       }
-
+  
       res.status(200).send({
         message: "Song deleted successfully!",
       });
