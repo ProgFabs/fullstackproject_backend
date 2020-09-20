@@ -155,7 +155,7 @@ export class PlaylistDatabase extends BaseDatabase {
         SELECT m.*, g.genre from MC_Music m 
         INNER JOIN MC_MusicGenres g 
         INNER JOIN MC_PlaylistSongs p 
-        ON m.id = g.music_id
+        ON (m.id = g.music_id AND m.id = p.music_id)
         WHERE (g.genre LIKE "%${genre}%" AND m.title LIKE "%${title}%" AND p.playlist_id LIKE "%${playlistId}%")
         ORDER BY ${feedInput.orderBy} ${feedInput.orderType}  
       `);
@@ -166,6 +166,8 @@ export class PlaylistDatabase extends BaseDatabase {
           index ===
           self.findIndex((e: any) => e.title === el.title && e.id === el.id)
       );
+
+      console.log(result[0])
 
       return result[0];
     } catch (error) {
