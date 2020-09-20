@@ -1,5 +1,5 @@
 import { PlaylistBusiness } from '../business/PlaylistBusiness';
-import { Playlist, PlaylistInputDTO } from '../model/Playlist';
+import { Playlist, PlaylistFeedInputDTO, PlaylistInputDTO } from '../model/Playlist';
 import { Request, Response } from "express";
 import { Authenticator } from '../services/Authenticator';
 import moment from 'moment';
@@ -8,6 +8,7 @@ import { PlaylistDatabase } from '../data/PlaylistDatabase';
 import { MusicDatabase } from '../data/MusicDatabase';
 import { MusicBusiness } from '../business/MusicBusiness';
 import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
+import { MusicFeedInputDTO } from '../model/Music';
 
 export class PlaylistController {
   async insertPlaylist(req: Request, res: Response) {
@@ -124,41 +125,123 @@ export class PlaylistController {
     }
   }
 
-  async deleteSongFromPlaylistById(req: Request, res: Response) {
+  async deletePlaylistById(req: Request, res: Response) {
     try {
       const token = req.headers.auth as string;
-      const id = req.params.id;
+      const playlistId = req.params.id;
 
       const playlistBusiness = new PlaylistBusiness();
-      const playlistDB = new PlaylistDatabase();
+
       const authenticator = new Authenticator();
       const authenticationData = authenticator.getData(token);
+
       const userDB = new UserDatabase();
       const user: any = await userDB.getUserById(authenticationData.id);
-
       const userPlaylists = await playlistBusiness.getAllPlaylistsByUserId(
         user.id
       );
-      const userPlaylistsIds: any[] = [];
-      const songToDelete = await playlistDB.getSongToDeleteById(id); // alterei essa linha as 18h56
 
       for (let playlist of userPlaylists) {
-        userPlaylistsIds.push(playlist.id);
+        if (playlist.id !== playlistId) {
+          throw new Error("Error upon trying to find the playlist.");
+        }
       }
 
-      for (let item of userPlaylistsIds) {
-        if (songToDelete.playlist_id === item) {
-          await playlistBusiness.deleteSongFromPlaylistById(id);
-        } else {
-          throw new Error(
-            "You can't delete this song, as you're not it's owner."
-          );
+      for (let playlist of userPlaylists) {
+        if (playlist.id === playlistId) {
+          await playlistBusiness.deletePlaylistById(playlistId);
+        }
+      }
+
+      res.status(200).send({
+        message: "Playlist deleted successfully!",
+      });
+    } catch (err) {
+      res.status(400).send({ error: err.message });
+    }
+  }
+
+  async deleteSongFromPlaylistById(req: Request, res: Response) {
+    try {
+      const token = req.headers.auth as string;
+      const songId = req.params.id;
+      const playlistId = req.body.playlist_id;
+
+      const playlistBusiness = new PlaylistBusiness();
+
+      const authenticator = new Authenticator();
+      const authenticationData = authenticator.getData(token);
+
+      const userDB = new UserDatabase();
+      const user: any = await userDB.getUserById(authenticationData.id);
+      const userPlaylists = await playlistBusiness.getAllPlaylistsByUserId(
+        user.id
+      );
+      const songToDelete = await playlistBusiness.getPlaylistSongs(songId);
+
+      if (songToDelete.length === 0) {
+        throw new Error("Error upon trying to find the song.");
+      }
+
+      for (let playlist of userPlaylists) {
+        if (playlist.id === playlistId) {
+          await playlistBusiness.deleteSongFromPlaylistById(songId, playlistId);
         }
       }
 
       res.status(200).send({
         message: "Song deleted successfully!",
       });
+    } catch (err) {
+      res.status(400).send({ error: err.message });
+    }
+  }
+
+  async getAllPlaylistSongs(req: Request, res: Response) {
+    const playlistBusiness = new PlaylistBusiness();
+    const musicBusiness = new MusicBusiness();
+    try {
+      const token = req.headers.auth as string;
+
+      const authenticator = new Authenticator();
+      const authenticationData = authenticator.getData(token);
+      const userDB = new UserDatabase();
+      const user: any = await userDB.getUserById(authenticationData.id);
+
+      const title = req.query.title as string;
+      const genre = req.query.genre as string;
+      const orderBy = req.query.orderBy as string;
+      const orderType = req.query.orderType as string;
+      const page = req.query.page as string;
+      const playlist_id = req.params.id;
+
+      const feedInput: PlaylistFeedInputDTO = {
+        title: title,
+        genre: genre,
+        orderBy: orderBy,
+        orderType: orderType,
+        page: Number(page),
+      };
+
+      const music: any[] = await playlistBusiness.getAllPlaylistSongsFiltered(
+        playlist_id,
+        feedInput
+      );
+      const songs = [];
+
+      for (const item of music) {
+        const musicGenres = await musicBusiness.getMusicGenres(item.id);
+        const convertedDate = moment(item.date).format("DD-MM-YYYY");
+        item.date = convertedDate;
+        item.genre = musicGenres;
+        songs.push(item);
+      }
+
+      const result = {
+        songs,
+      };
+
+      res.status(200).send(result);
     } catch (err) {
       res.status(400).send({ error: err.message });
     }

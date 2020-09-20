@@ -1,3 +1,4 @@
+import { PlaylistFeedInputDTO } from "../model/Playlist";
 import { BaseDatabase } from "./BaseDatabase";
 
 export class PlaylistDatabase extends BaseDatabase {
@@ -80,12 +81,31 @@ export class PlaylistDatabase extends BaseDatabase {
     }
   }
 
-  public async deleteSongFromPlaylistById(id: string): Promise<any> {
+  public async deletePlaylistById(playlist_id: string): Promise<any[]> {
     try {
-      const result = await this.getConnection()
-        .delete()
-        .from("MC_PlaylistSongs")
-        .where({ id });
+      const firstQuery = await this.getConnection().raw(
+        `DELETE FROM MC_PlaylistSongs WHERE playlist_id = "${playlist_id}";`
+      );
+      const secondQuery = await this.getConnection().raw(
+        `DELETE FROM MC_Playlist WHERE id = "${playlist_id}";`
+      );
+      const result = [firstQuery, secondQuery];
+
+      return result;
+    } catch (error) {
+      throw new Error(error.sqlMessage || error.message);
+    }
+  }
+
+  public async deleteSongFromPlaylistById(
+    music_id: string,
+    playlist_id: string
+  ): Promise<any> {
+    try {
+      const result = await this.getConnection().raw(`
+        DELETE FROM MC_PlaylistSongs WHERE 
+        (music_id = '${music_id}' AND playlist_id = '${playlist_id}')
+      `);
 
       return result;
     } catch (error) {
@@ -106,19 +126,6 @@ export class PlaylistDatabase extends BaseDatabase {
     }
   }
 
-  public async getSongToDeleteById(id: string): Promise<any> {
-    try {
-      const result = await this.getConnection()
-        .select("*")
-        .from("MC_PlaylistSongs")
-        .where({ id });
-
-      return result[0];
-    } catch (error) {
-      throw new Error(error.sqlMessage || error.message);
-    }
-  }
-
   public async getSongToDeleteByMusicId(music_id: string): Promise<any[]> {
     try {
       const result = await this.getConnection()
@@ -127,6 +134,40 @@ export class PlaylistDatabase extends BaseDatabase {
         .where({ music_id });
 
       return result;
+    } catch (error) {
+      throw new Error(error.sqlMessage || error.message);
+    }
+  }
+
+  public async getAllPlaylistSongsFiltered(
+    feedInput: PlaylistFeedInputDTO,
+    playlist_id: string,
+    musicPerPage: number,
+    offset: number
+  ): Promise<any> {
+    try {
+      // Slices para remover as aspas da string
+      const genre = feedInput.genre.slice(1, -1);
+      const title = feedInput.title.slice(1, -1);
+      const playlistId = playlist_id.slice(1, -1);
+
+      const result = await this.getConnection().raw(`
+        SELECT m.*, g.genre from MC_Music m 
+        INNER JOIN MC_MusicGenres g 
+        INNER JOIN MC_PlaylistSongs p 
+        ON m.id = g.music_id
+        WHERE (g.genre LIKE "%${genre}%" AND m.title LIKE "%${title}%" AND p.playlist_id LIKE "%${playlistId}%")
+        ORDER BY ${feedInput.orderBy} ${feedInput.orderType}  
+      `);
+
+      // Para eliminar valores duplicados por causa dos gêneros
+      result[0] = result[0].filter(
+        (el: any, index: any, self: any) =>
+          index ===
+          self.findIndex((e: any) => e.title === el.title && e.id === el.id)
+      );
+
+      return result[0];
     } catch (error) {
       throw new Error(error.sqlMessage || error.message);
     }

@@ -155,16 +155,19 @@ export class MusicDatabase extends BaseDatabase {
     offset: number
   ): Promise<any> {
     try {
+
+      // Slices para remover as aspas da string
+      const genre = feedInput.genre.slice(1, -1);
+      const title = feedInput.title.slice(1, -1);
+      const userSongs = feedInput.userSongs.slice(1, -1)
+      
       const result = await this.getConnection().raw(`
         SELECT m.*, g.genre from MC_Music m 
         JOIN MC_MusicGenres g 
         ON m.id = g.music_id
-        WHERE g.genre LIKE "%${feedInput.musicGenre}%"
-        ORDER BY ${feedInput.orderBy} ${feedInput.orderType}
-      
+        WHERE (g.genre LIKE "%${genre}%" AND m.title LIKE "%${title}%" AND m.added_by LIKE "%${userSongs}%")
+        ORDER BY ${feedInput.orderBy} ${feedInput.orderType}  
       `);
-      // LIMIT ${musicPerPage}
-      //   OFFSET ${offset};
 
       result[0] = result[0].filter(
         (el: any, index: any, self: any) =>

@@ -80,7 +80,9 @@ export interface MusicInputDTO {
 }
 
 export interface MusicFeedInputDTO {
-  musicGenre: string;
+  title: string;
+  genre: string;
+  userSongs: string;
   orderBy: string;
   orderType: string;
   page: number;

@@ -141,20 +141,29 @@ export class MusicController {
     const musicBusiness = new MusicBusiness();
     try {
       const token = req.headers.auth as string;
+            
+      const authenticator = new Authenticator     
+      const authenticationData = authenticator.getData(token);
+      const userDB = new UserDatabase();
+      const user: any = await userDB.getUserById(authenticationData.id);
 
-      const musicGenre = req.query.musicGenre as string;
+      const title = req.query.title as string;
+      const genre = req.query.genre as string;
+      const userSongs = req.query.userSongs as string;
       const orderBy = req.query.orderBy as string;
       const orderType = req.query.orderType as string;
       const page = req.query.page as string;
 
       const feedInput: MusicFeedInputDTO = {
-        musicGenre: musicGenre,
+        title: title,
+        genre: genre,
+        userSongs: userSongs,
         orderBy: orderBy,
         orderType: orderType,
         page: Number(page),
       };
 
-      const music: any[] = await musicBusiness.getAllSongsFiltered(token, feedInput);
+      const music: any[] = await musicBusiness.getAllSongsFiltered(user.id, feedInput);
       const songs = [];
 
       for (const item of music) {
