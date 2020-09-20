@@ -87,44 +87,6 @@ export class PlaylistController {
     }
   }
 
-  async getPlaylistSongs(req: Request, res: Response) {
-    const playlistBusiness = new PlaylistBusiness();
-    const musicBusiness = new MusicBusiness();
-    try {
-      const playlistId = req.params.id;
-      const playlistSongsIds: any[] = await playlistBusiness.getPlaylistSongs(
-        playlistId
-      );
-      const retrievedSongs: any[] = [];
-      const songs: any[] = [];
-
-      console.log("IDs que chegaram na controller", playlistSongsIds);
-      for (const item of playlistSongsIds) {
-        const newSongs: [] = await musicBusiness.getSongById(item);
-        songs.push(newSongs);
-      }
-
-      console.log("músicas", songs);
-
-      for (const item of songs) {
-        const convertedDate = moment(item.date).format("DD-MM-YYYY");
-        item.date = convertedDate;
-
-        retrievedSongs.push(item);
-      }
-
-      console.log("retrievedSongs", retrievedSongs);
-
-      const result = {
-        PlaylistSongs: retrievedSongs,
-      };
-
-      res.status(200).send(result);
-    } catch (err) {
-      res.status(400).send({ error: err.message });
-    }
-  }
-
   async deletePlaylistById(req: Request, res: Response) {
     try {
       const token = req.headers.auth as string;
@@ -137,19 +99,13 @@ export class PlaylistController {
 
       const userDB = new UserDatabase();
       const user: any = await userDB.getUserById(authenticationData.id);
-      const userPlaylists = await playlistBusiness.getAllPlaylistsByUserId(
+      const userPlaylists: any[] = await playlistBusiness.getAllPlaylistsByUserId(
         user.id
       );
 
       for (let playlist of userPlaylists) {
-        if (playlist.id !== playlistId) {
-          throw new Error("Error upon trying to find the playlist.");
-        }
-      }
-
-      for (let playlist of userPlaylists) {
         if (playlist.id === playlistId) {
-          await playlistBusiness.deletePlaylistById(playlistId);
+            await playlistBusiness.deletePlaylistById(playlistId);
         }
       }
 
