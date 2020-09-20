@@ -34,11 +34,11 @@ export class PlaylistBusiness {
     return playlists;
   }
 
-  async getPlaylistSongs(playlist_id: string) {
+  async getPlaylistsSongsIds(playlist_id: string) {
     const playlistDB = new PlaylistDatabase();
-    const playlistSongsFromDB = await playlistDB.getPlaylistSongs(playlist_id);
+    const playlistSongsIdsFromDB = await playlistDB.getPlaylistSongsIds(playlist_id);
 
-    return playlistSongsFromDB;
+    return playlistSongsIdsFromDB;
   }
 
   async deletePlaylistById(playlist_id: string) {
