@@ -1,32 +1,17 @@
 import { PlaylistDatabase } from '../data/PlaylistDatabase';
 import { IdGenerator } from '../services/IdGenerator';
-import { PlaylistInputDTO } from '../model/Playlist';
+import { PlaylistFeedInputDTO, PlaylistInputDTO } from '../model/Playlist';
+import { MusicDatabase } from '../data/MusicDatabase';
+import { MusicFeedInputDTO } from '../model/Music';
 
 export class PlaylistBusiness {
   async insertPlaylist(playlist: PlaylistInputDTO) {
     const idGenerator = new IdGenerator();
     const id = idGenerator.generate();
 
-    const playlistDatabase = new PlaylistDatabase();
-    // const AllPlaylists = await this.getAllMusic();
+    const playlistDB = new PlaylistDatabase();
 
-    // let playlistExistAlready = false;
-    // for(const song of AllSongs) {
-    //   if (
-    //     song.title === music.title &&
-    //     song.author === music.author &&
-    //     song.album === music.album
-    //   ) {
-    //     console.log(songExistAlready);
-    //     songExistAlready = true;
-    //     throw new Error("Esta música já está registrada no banco!");
-    //   }
-    // }
-
-    // if (!songExistAlready) {
-    // }
-
-    await playlistDatabase.insertPlaylist(
+    await playlistDB.insertPlaylist(
       id,
       playlist.title,
       playlist.subtitle,
@@ -35,33 +20,79 @@ export class PlaylistBusiness {
     );
   }
 
-  async insertSongIntoPlaylist(song: any, playlistId: any) {
+  async insertSongIntoPlaylist(song: any, playlist_id: any) {
     const idGenerator = new IdGenerator();
     const id = idGenerator.generate();
     const playlistDB = new PlaylistDatabase();
-    await playlistDB.insertSongIntoPlaylist(id, song.id, playlistId);
+    await playlistDB.insertSongIntoPlaylist(id, song.id, playlist_id);
   }
 
   async getAllPlaylistsByUserId(id: string) {
-    const playlistDatabase = new PlaylistDatabase();
-    const playlists = await playlistDatabase.getAllPlaylistsByUserId(id);
+    const playlistDB = new PlaylistDatabase();
+    const playlists = await playlistDB.getAllPlaylistsByUserId(id);
 
     return playlists;
   }
 
-  async getPlaylistSongs(playlistId: string) {
-    const playlistDatabase = new PlaylistDatabase();
-    const playlistSongsFromDB = await playlistDatabase.getPlaylistSongs(
-      playlistId
-    );
+  async getPlaylistSongs(playlist_id: string) {
+    const playlistDB = new PlaylistDatabase();
+    const playlistSongsFromDB = await playlistDB.getPlaylistSongs(playlist_id);
 
     return playlistSongsFromDB;
   }
 
-  async deleteSongFromPlaylistById(id: string) {
+  async deletePlaylistById(playlist_id: string) {
+    const playlistDB = new PlaylistDatabase();
+    const playlistToDelete = await playlistDB.deletePlaylistById(playlist_id);
+
+    return playlistToDelete;
+  }
+  async deleteSongFromPlaylistById(music_id: string, playlist_id: string) {
     const playlistDatabase = new PlaylistDatabase();
-    const songToDelete = await playlistDatabase.deleteSongFromPlaylistById(id);
+    const songToDelete = await playlistDatabase.deleteSongFromPlaylistById(
+      music_id,
+      playlist_id
+    );
 
     return songToDelete;
+  }
+
+  async getAllPlaylistSongsFiltered(
+    playlist_id: string,
+    feedInput: PlaylistFeedInputDTO
+  ): Promise<PlaylistFeedInputDTO[]> {
+    if (!feedInput.page || feedInput.page < 1 || Number.isNaN(feedInput.page)) {
+      feedInput.page = 1;
+    }
+
+    const songsPerPage = 20;
+
+    const offset = songsPerPage * (feedInput.page - 1);
+
+    if (!feedInput.genre) {
+      feedInput.genre = "";
+    }
+
+    if (!feedInput.title) {
+      feedInput.title = "";
+    }
+
+    if (feedInput.orderBy !== "title" && feedInput.orderBy !== "createdAt") {
+      feedInput.orderBy = "title";
+    }
+
+    if (feedInput.orderType !== "ASC" && feedInput.orderType !== "DESC") {
+      feedInput.orderType = "ASC";
+    }
+
+    const playlistDatabase = new PlaylistDatabase();
+    const playlistSongsFromDB = await playlistDatabase.getAllPlaylistSongsFiltered(
+      feedInput,
+      playlist_id,
+      songsPerPage,
+      offset
+    );
+
+    return playlistSongsFromDB;
   }
 }

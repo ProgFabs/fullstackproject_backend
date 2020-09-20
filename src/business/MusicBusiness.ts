@@ -36,7 +36,7 @@ export class MusicBusiness {
 
     const receivedGenres: string[] = [];
     for (let genre of genres) {
-      receivedGenres.push(genre.toLowerCase())
+      receivedGenres.push(genre)
     }
 
     for (const genre of receivedGenres) {
@@ -71,7 +71,6 @@ export class MusicBusiness {
     const songToDelete = await musicDatabase.deleteSongById(id);
     const musicGenresToDelete = await musicDatabase.deleteMusicGenresById(id);
 
-    console.log(songToDelete)
     return songToDelete;
   }
 
@@ -84,7 +83,7 @@ export class MusicBusiness {
 
   async getAllSongsFiltered(
     token: string,
-    feedInput: MusicFeedInputDTO
+    feedInput: MusicFeedInputDTO,
   ): Promise<MusicFeedInputDTO[]> {
     if (!feedInput.page || feedInput.page < 1 || Number.isNaN(feedInput.page)) {
       feedInput.page = 1;
@@ -94,8 +93,13 @@ export class MusicBusiness {
 
     const offset = songsPerPage * (feedInput.page - 1);
 
-    if (!feedInput.musicGenre) {
-      feedInput.musicGenre = "";
+    if (!feedInput.genre) {
+      feedInput.genre = "";
+      //throw new Error("Envie um nome de usuário válido");
+    }
+
+    if (!feedInput.title) {
+      feedInput.title = "";
       //throw new Error("Envie um nome de usuário válido");
     }
 
@@ -106,6 +110,12 @@ export class MusicBusiness {
 
     if (feedInput.orderType !== "ASC" && feedInput.orderType !== "DESC") {
       feedInput.orderType = "ASC";
+    }
+
+    if (!feedInput.userSongs) {
+      feedInput.userSongs = "";
+    } else if(feedInput.userSongs = "yes") {
+      feedInput.userSongs = token;
     }
 
     const musicDatabase = new MusicDatabase();

@@ -65,4 +65,12 @@ export interface PlaylistInputDTO {
   creator_id: string;
 }
 
+export interface PlaylistFeedInputDTO {
+  title: string;
+  genre: string;
+  orderBy: string;
+  orderType: string;
+  page: number;
+}
+
 
