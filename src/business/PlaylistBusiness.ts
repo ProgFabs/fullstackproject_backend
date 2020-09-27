@@ -1,8 +1,6 @@
 import { PlaylistDatabase } from '../data/PlaylistDatabase';
 import { IdGenerator } from '../services/IdGenerator';
 import { PlaylistFeedInputDTO, PlaylistInputDTO } from '../model/Playlist';
-import { MusicDatabase } from '../data/MusicDatabase';
-import { MusicFeedInputDTO } from '../model/Music';
 
 export class PlaylistBusiness {
   async insertPlaylist(playlist: PlaylistInputDTO) {

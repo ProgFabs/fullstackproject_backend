@@ -3,7 +3,7 @@ import { IdGenerator } from '../services/IdGenerator';
 import { MusicFeedInputDTO, MusicInputDTO } from '../model/Music';
 
 export class MusicBusiness {
-  async insertMusic(music: MusicInputDTO, genres: string[]) {
+  async insertSong(music: MusicInputDTO, genres: string[]) {
     const idGenerator = new IdGenerator();
     const id = idGenerator.generate();
 
@@ -34,9 +34,31 @@ export class MusicBusiness {
       );
     }
 
+    const albums: any[] = await musicDatabase.getAllAlbums();
+    let count = 0;
+
+    for (let item of albums) {
+      count++;
+      if (music.album === item.album && music.author === item.author) {
+        break;
+      } else if (
+        music.album !== item.album &&
+        music.author !== item.author &&
+        count === albums.length
+      ) {
+        const albumId = idGenerator.generate();
+        await musicDatabase.insertAlbum(
+          albumId,
+          music.album,
+          music.author,
+          music.album_img
+        );
+      }
+    }
+
     const receivedGenres: string[] = [];
     for (let genre of genres) {
-      receivedGenres.push(genre)
+      receivedGenres.push(genre);
     }
 
     for (const genre of receivedGenres) {
@@ -66,6 +88,13 @@ export class MusicBusiness {
     return musicGenreFromDB;
   }
 
+  async getAlbums(album: string, author: string) {
+    const musicDatabase = new MusicDatabase();
+    const albumsFromDB = await musicDatabase.getAlbums(album, author);
+
+    return albumsFromDB;
+  }
+
   async deleteSongById(id: string) {
     const musicDatabase = new MusicDatabase();
     const songToDelete = await musicDatabase.deleteSongById(id);
@@ -81,9 +110,16 @@ export class MusicBusiness {
     return musicFromDB;
   }
 
+  async getAllAlbums() {
+    const musicDatabase = new MusicDatabase();
+    const albumsFromDB = await musicDatabase.getAllAlbums();
+
+    return albumsFromDB;
+  }
+
   async getAllSongsFiltered(
     token: string,
-    feedInput: MusicFeedInputDTO,
+    feedInput: MusicFeedInputDTO
   ): Promise<MusicFeedInputDTO[]> {
     if (!feedInput.page || feedInput.page < 1 || Number.isNaN(feedInput.page)) {
       feedInput.page = 1;
@@ -114,7 +150,7 @@ export class MusicBusiness {
 
     if (!feedInput.userSongs) {
       feedInput.userSongs = "";
-    } else if(feedInput.userSongs = "yes") {
+    } else if ((feedInput.userSongs = "yes")) {
       feedInput.userSongs = token;
     }
 

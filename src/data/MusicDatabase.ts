@@ -1,6 +1,5 @@
 import { BaseDatabase } from "./BaseDatabase";
-import moment, { Moment } from "moment"
-import { Music, MusicFeedInputDTO } from "../model/Music";
+import { MusicFeedInputDTO } from "../model/Music";
 
 export class MusicDatabase extends BaseDatabase {
   private static TABLE_NAME = "MC_Music";
@@ -49,13 +48,43 @@ export class MusicDatabase extends BaseDatabase {
     }
   }
 
+  public async insertAlbum(
+    id: string,
+    album: string,
+    author: string,
+    album_img: string
+  ): Promise<any> {
+    try {
+      await this.getConnection()
+      .insert({
+        id,
+        album,
+        author,
+        album_img
+      })
+      .into("MC_Albums");
+    } catch (error) {
+      throw new Error(error.sqlMessage || error.message);
+    }
+  }
+
   public async getSongById(id: string): Promise<any> {
     try {
-      const result = await this.getConnection()
-        .select("*")
-        .from(MusicDatabase.TABLE_NAME)
-        .where({ id });
-      return result[0];
+      const result = await this.getConnection().raw(`
+      SELECT m.*, g.genre, a.album_img FROM MC_Music m
+      INNER JOIN MC_Albums a
+      INNER JOIN MC_MusicGenres g
+      ON (m.album = a.album AND m.author = a.author AND g.music_id = m.id)
+      WHERE m.id = "${id}"
+      `)
+
+      result[0] = result[0].filter(
+        (el: any, index: any, self: any) =>
+          index ===
+          self.findIndex((e: any) => e.title === el.title && e.id === el.id)
+      );
+
+      return result[0][0];
     } catch (error) {
       throw new Error(error.sqlMessage || error.message);
     }
@@ -63,19 +92,20 @@ export class MusicDatabase extends BaseDatabase {
 
   public async getSongByUserId(added_by: string): Promise<any> {
     try {
-      const result = await this.getConnection()
-        .select("*")
-        .from(MusicDatabase.TABLE_NAME)
-        .where({ added_by });
+      const result = await this.getConnection().raw(`
+      SELECT m.*, g.genre, a.album_img FROM MC_Music m
+      INNER JOIN MC_Albums a
+      INNER JOIN MC_MusicGenres g
+      ON (m.album = a.album AND m.author = a.author AND g.music_id = m.id)
+      WHERE m.added_by = "${added_by}"
+      `)
 
-      let counter = -1;
-      let newResult = [];
-      for (const item of result) {
-        counter++;
-        newResult.push(result[counter]);
-      }
-
-      return newResult;
+      result[0] = result[0].filter(
+        (el: any, index: any, self: any) =>
+          index ===
+          self.findIndex((e: any) => e.title === el.title && e.id === el.id)
+      );
+      return result[0];
     } catch (error) {
       throw new Error(error.sqlMessage || error.message);
     }
@@ -88,7 +118,6 @@ export class MusicDatabase extends BaseDatabase {
         .from(MusicDatabase.TABLE_NAME)
         .where({ id });
 
-        console.log(result)
       return result;
     } catch (error) {
       throw new Error(error.sqlMessage || error.message);
@@ -127,6 +156,22 @@ export class MusicDatabase extends BaseDatabase {
     }
   }
 
+  public async getAlbums(album: string, author: string): Promise<any> {
+    try {
+      const result = await this.getConnection().raw(`
+      SELECT a.album, a.author, a.album_img FROM MC_Albums a
+      INNER JOIN MC_Albums m
+      ON (m.album = a.album AND m.author = a.author)
+      WHERE (a.album LIKE "%${album}%" AND a.author LIKE "%${author}%");
+      `)
+
+      return result[0];
+    } catch (error) {
+      throw new Error(error.sqlMessage || error.message);
+    }
+  }
+
+
   public async getAllSongs(): Promise<any> {
     try {
       const result = await this.getConnection()
@@ -142,10 +187,21 @@ export class MusicDatabase extends BaseDatabase {
 
       return newResult;
     } catch (error) {
-      throw new Error(
-        error.sqlMessage + " (getAllSongsFiltered)" ||
-          error.message + " (getAllSongsFiltered)"
-      );
+      throw new Error(error.sqlMessage || error.message);
+    }
+  }
+
+  public async getAllAlbums(): Promise<any> {
+    try {
+      const result = await this.getConnection().raw(`
+      SELECT album, author, album_img from MC_Albums
+      `)
+
+      
+
+      return result[0];
+    } catch (error) {
+      throw new Error(error.sqlMessage || error.message);
     }
   }
 
@@ -162,9 +218,10 @@ export class MusicDatabase extends BaseDatabase {
       const userSongs = feedInput.userSongs.slice(1, -1)
       
       const result = await this.getConnection().raw(`
-        SELECT m.*, g.genre from MC_Music m 
-        JOIN MC_MusicGenres g 
-        ON m.id = g.music_id
+        SELECT m.*, g.genre, a.album_img from MC_Music m 
+        INNER JOIN MC_Albums a
+        INNER JOIN MC_MusicGenres g
+        ON (m.album = a.album AND m.author = a.author AND g.music_id = m.id)
         WHERE (g.genre LIKE "%${genre}%" AND m.title LIKE "%${title}%" AND m.added_by LIKE "%${userSongs}%")
         ORDER BY ${feedInput.orderBy} ${feedInput.orderType}  
       `);
