@@ -1,14 +1,12 @@
 import { PlaylistBusiness } from '../business/PlaylistBusiness';
-import { Playlist, PlaylistFeedInputDTO, PlaylistInputDTO } from '../model/Playlist';
+import { PlaylistFeedInputDTO, PlaylistInputDTO } from '../model/Playlist';
 import { Request, Response } from "express";
 import { Authenticator } from '../services/Authenticator';
 import moment from 'moment';
 import { UserDatabase } from '../data/UserDatabase';
-import { PlaylistDatabase } from '../data/PlaylistDatabase';
 import { MusicDatabase } from '../data/MusicDatabase';
 import { MusicBusiness } from '../business/MusicBusiness';
-import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
-import { MusicFeedInputDTO } from '../model/Music';
+
 
 export class PlaylistController {
   async insertPlaylist(req: Request, res: Response) {
@@ -42,16 +40,17 @@ export class PlaylistController {
   async insertSongIntoPlaylist(req: Request, res: Response) {
     try {
       const token = req.headers.auth as string;
-      const id = req.params.id;
-      const playlistId = req.body.id;
+      const songId = req.params.id;
+      const playlistId = req.body.playlist_id;
 
       const authenticator = new Authenticator();
       const authenticationData = authenticator.getData(token);
 
       const userDB = new UserDatabase();
       const user = await userDB.getUserById(authenticationData.id);
+
       const musicDB = new MusicDatabase();
-      const song = await musicDB.getSongById(id);
+      const song = await musicDB.getSongById(songId);
 
       const playlistBusiness = new PlaylistBusiness();
       await playlistBusiness.insertSongIntoPlaylist(song, playlistId);

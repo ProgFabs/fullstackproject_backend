@@ -19,6 +19,9 @@ export class UserBusiness {
 
         if(userVerification === "User not found!") {
             await userDatabase.createUser(id, user.name, user.email, hashPassword);
+
+            const userPreferencesId = idGenerator.generate();
+            await userDatabase.insertUserPreferences(userPreferencesId, id)
         } else {
             throw new Error("This email is registered already!")
         }
@@ -29,15 +32,22 @@ export class UserBusiness {
         return accessToken;
     }
 
+    async changeThemePreference(theme: string, id: string) {
+        const userDB = new UserDatabase()
+        const changedTheme: any = await userDB.changeThemePreference(theme, id)
+
+        return changedTheme
+    }
+
     async getUserByEmail(user: LoginInputDTO) {
         const userDatabase = new UserDatabase();
-        const userFromDB = await userDatabase.getUserByEmail(user.email);
+        const userFromDB: any = await userDatabase.getUserByEmail(user.email);
 
         const hashManager = new HashManager();
-        const hashCompare = await hashManager.compare(user.password, userFromDB.getPassword());
+        const hashCompare = await hashManager.compare(user.password, userFromDB.password);
 
         const authenticator = new Authenticator();
-        const accessToken = authenticator.generateToken({ id: userFromDB.getId() });
+        const accessToken = authenticator.generateToken({ id: userFromDB.id });
 
         if (!hashCompare) {
             throw new Error("Invalid Password!");

@@ -49,13 +49,33 @@ export class UserController {
     async getUserById(req: Request, res: Response) {
         try { 
             const token = req.headers.auth as string;
-
             const authenticator = new Authenticator();
             const authenticationData = authenticator.getData(token);
             const userDB = new UserDatabase();
             const user = await userDB.getUserById(authenticationData.id);
 
             res.status(200).send({ user })
+        } catch (error) {
+            res.status(400).send({ error: error.message })
+        }
+    }
+
+    async changeUserTheme(req: Request, res: Response) {
+        try {
+            const token = req.headers.auth as string;
+            const theme = req.body.theme as string;
+
+            let upperCasedTheme = theme.toUpperCase();
+
+            const authenticator = new Authenticator();
+            const authenticationData = authenticator.getData(token);
+            const userDB = new UserDatabase();
+            const user: any = await userDB.getUserById(authenticationData.id);
+            const userBusiness = new UserBusiness()
+            
+            await userBusiness.changeThemePreference(upperCasedTheme, user.id);
+
+            res.status(200).send({ message: "Theme changed successfully!" })
         } catch (error) {
             res.status(400).send({ error: error.message })
         }

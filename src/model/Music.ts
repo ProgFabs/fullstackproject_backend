@@ -76,6 +76,7 @@ export interface MusicInputDTO {
     date: Date;
     file: string;
     album: string;
+    album_img: string;
     added_by: string;
 }
 

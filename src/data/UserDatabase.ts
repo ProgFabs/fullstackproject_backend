@@ -26,24 +26,57 @@ export class UserDatabase extends BaseDatabase {
   }
 
   public async getUserByEmail(email: string): Promise<any> {
-    const result = await this.getConnection()
-      .select("*")
-      .from(UserDatabase.TABLE_NAME)
-      .where({ email });
-
-      if(result.length === 0) {
+    try {
+      const result = await this.getConnection().raw(`
+      SELECT u.*, up.page_theme FROM MC_Users u
+      INNER JOIN MC_UserPreferences up
+      ON u.id = up.user_id
+      WHERE u.email = "${email}"
+    `);
+      if(result[0].length === 0) {
         return "User not found!"
       }
 
-    return User.toUserModel(result[0]);
+      return result[0][0];
+    } catch (error) {
+      throw new Error(error.sqlMessage || error.message)
+    }
   }
 
   public async getUserById(id: string): Promise<User> {
-    const result = await this.getConnection()
-      .select("*")
-      .from(UserDatabase.TABLE_NAME)
-      .where({ id });
+    const result = await this.getConnection().raw(`
+      SELECT u.id, u.name, u.email, up.page_theme FROM MC_Users u
+      INNER JOIN MC_UserPreferences up
+      ON u.id = up.user_id
+      WHERE u.id = "${id}"
+    `);
 
-    return User.toUserModel(result[0]);
+    return result[0][0];
   }
+
+  public async insertUserPreferences(id: string, user_id: string) {
+    try {
+      await this.getConnection()
+      .insert({
+        id, 
+        user_id
+      })
+      .into("MC_UserPreferences");
+    } catch(error) {
+      throw new Error(error.sqlMessage || error.message)
+    }
+  }
+
+  public async changeThemePreference(theme: string, id: string): Promise<any> {
+    try {
+    const result = await this.getConnection().raw(`
+    UPDATE MC_UserPreferences 
+    SET page_theme = "${theme}" WHERE user_id = "${id}"
+    `);
+
+    return result[0]
+  } catch (error) {
+    throw new Error(error.sqlMessage || error.message)
+  }
+}
 }
