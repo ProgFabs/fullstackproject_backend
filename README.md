@@ -4,7 +4,7 @@ Backend do projeto Full Stack, feito durante o curso Web Full Stack da Labenu, b
 **DEPLOY**: http://musicality.s3-website-us-east-1.amazonaws.com 
 
 ## Instalação
-- Clone o repositório para a sua máquina local usando `https://github.com/ProgFabs/fullstackproject_frontend.git`
+- Clone o repositório para a sua máquina local usando `https://github.com/ProgFabs/fullstackproject_backend.git`
 - Execute o comando para instalar todas as dependências:
 ```
 $ npm install
